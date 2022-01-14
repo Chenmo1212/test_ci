@@ -1,8 +1,5 @@
 name: Publish And Deploy Demo
-on:
-  push:
-    tags:
-      - 'v*'
+on: push
 
 jobs:
   build-and-deploy:
@@ -12,13 +9,6 @@ jobs:
     # 下载源码
     - name: Checkout
       uses: actions/checkout@master
-
-    # 打包构建
-    - name: Build
-      uses: actions/setup-node@master
-    - run: npm install
-    - run: npm run build
-    - run: tar -zcvf release.tgz .nuxt static nuxt.config.js package.json package-lock.json pm2.config.json
 
     # 发布 Release
     - name: Create Release
@@ -43,18 +33,3 @@ jobs:
         asset_path: ./release.tgz
         asset_name: release.tgz
         asset_content_type: application/x-tgz
-
-    # 部署到服务器
-    - name: Deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd /root/realworld-nuxtjs
-          wget https://github.com/lipengzhou/realworld-nuxtjs/releases/latest/download/release.tgz -O release.tgz
-          tar zxvf release.tgz
-          npm install --production
-          pm2 reload pm2.config.json
